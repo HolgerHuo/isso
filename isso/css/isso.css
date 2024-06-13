@@ -361,3 +361,147 @@ h4.isso-thread-heading {
         margin-top: 0;
     }
 }
+
+
+/* Custom Settings */
+@media(min-width:768px) {
+    .isso-thread {
+      width:80%;
+      margin:auto;
+    }
+}
+.isso-thread-heading {
+    margin-bottom: 10px;
+}
+
+.isso-postbox {
+    .isso-auth-section .isso-input-wrapper input,
+    .isso-textarea-wrapper .isso-textarea {
+        background: #fafafa;
+        border: 1px solid #eee;
+        border-radius: 0.2rem;
+        padding: 0.6rem 0.8rem;
+    }
+
+    .isso-auth-section {
+        margin-top: 15px;
+        display: flex;
+        display: -ms-flexbox;
+
+        .isso-input-wrapper {
+            -ms-flex: 1 1 24%;
+            flex: 1 1 24%;
+            width: 24%;
+
+            label {
+                display: none;
+            }
+
+            input {
+                width: 100%;
+            }
+
+            input:focus,
+            .isso-textarea-wrapper .isso-textarea:focus {
+                border-color: #999;
+                outline: 0;
+            }
+        }
+
+        .isso-post-action {
+            margin: 0 0 0 0;
+            -ms-flex: 1 1 14%;
+            flex: 1 1 14%;
+            width: 14%;
+
+            input {
+                -webkit-appearance: none;
+                -moz-appearance: none;
+                appearance: none;
+                background: #2687fb;
+                border: 0.1rem solid #177ffb;
+                border-radius: 0.2rem;
+                color: #fff;
+                padding: 0.6rem;
+                width: 100%;
+            }
+        }
+
+        .isso-post-action-edit {
+            display: none;
+        }
+
+        .isso-input-wrapper label {
+            display: none;
+        }
+    }
+}
+
+.isso-postbox.isso-preview-mode > .isso-form-wrapper .isso-post-action-preview {
+    display: none !important;
+}
+.isso-postbox.isso-preview-mode > .isso-form-wrapper .isso-post-action-edit {
+    display: flex !important;
+}
+
+.isso-notification-section {
+    display: none;
+}
+
+.isso-comment {
+    .isso-spacer,
+    .isso-downvote,
+    .isso-upvote {
+        display: inline-block;
+    }
+    .isso-votes {
+        font-weight: bold;
+        padding-right: 0.2em;
+        text-decoration: none;
+        position: relative;
+        top: 0.2em;
+    }
+    .isso-text-wrapper {
+        padding-left: calc(55px + 1.9em);
+    }
+    .isso-avatar img {
+        border-radius: 50%;
+        height: auto;
+        width: 3rem;
+    }
+}
+.isso-preview .isso-text-wrapper {
+    padding-left: revert;
+}
+
+@media (prefers-color-scheme: dark) {
+    .isso-postbox {
+        .isso-auth-section .isso-input-wrapper input,
+        .isso-textarea-wrapper .isso-textarea {
+            background: rgb(51, 65, 85);
+            border: 1px solid rgb(51, 65, 85);
+        }
+    }
+
+    .isso-author, .isso-page-author-suffix, h4.isso-thread-heading {
+        color: revert;
+    }
+
+    .isso-preview {
+        background: transparent;
+    }
+}
+
+.isso-postbox:is(.dark *) {
+    .isso-auth-section .isso-input-wrapper input,
+    .isso-textarea-wrapper .isso-textarea {
+        background: rgb(51, 65, 85);
+        border: 1px solid rgb(51, 65, 85);
+    }
+}
+.isso-author:is(.dark *), .isso-page-author-suffix:is(.dark *), h4.isso-thread-heading:is(.dark *) {
+    color: revert;
+}
+.isso-preview:is(.dark *) {
+    background: transparent;
+}
