@@ -67,7 +67,7 @@ from isso.wsgi import origin, urlsplit
 from isso.utils import http, JSONRequest, JSONResponse, html, hash
 from isso.views import comments
 
-from isso.ext.notifications import Stdout, SMTP
+from isso.ext.notifications import Stdout, SMTP, Apprise
 
 LOG_FORMAT = "%(asctime)s:%(levelname)s: %(message)s"
 logging.getLogger('werkzeug').setLevel(logging.WARN)
@@ -110,7 +110,9 @@ class Isso(object):
         subscribers = []
         smtp_backend = False
         for backend in conf.getlist("general", "notify"):
-            if backend == "stdout":
+            if backend == "apprise":
+                subscribers.append(Apprise(self))
+            elif backend == "stdout":
                 subscribers.append(Stdout(self))
             elif backend in ("smtp", "SMTP"):
                 smtp_backend = True

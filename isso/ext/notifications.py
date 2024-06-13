@@ -10,6 +10,7 @@ from _thread import start_new_thread
 from email.message import EmailMessage
 from email.utils import formatdate
 from urllib.parse import quote
+import apprise
 
 import logging
 logger = logging.getLogger("isso")
@@ -248,3 +249,97 @@ class Stdout(object):
 
     def _activate_comment(self, thread, comment):
         logger.info("comment %(id)s activated" % thread)
+
+class Apprise(object):
+
+    def __init__(self, isso):
+
+        self.isso = isso
+        self.public_endpoint = isso.conf.get("server", "public-endpoint") or local("host")
+
+        self.apobj = apprise.Apprise()
+
+        for endpoint in isso.conf.getiter("general", "notify-endpoint"):
+            self.apobj.add(endpoint)
+
+        if uwsgi:
+            def spooler(args):
+                try:
+                    self._notify(args[b"title"].decode("utf-8"),
+                                   args["body"].decode("utf-8"))
+                except:
+                    return uwsgi.SPOOL_RETRY
+                else:
+                    return uwsgi.SPOOL_OK
+
+            uwsgi.spooler = spooler
+
+    def __iter__(self):
+        yield "comments.new:after-save", self.notify_new
+
+    def format(self, thread, comment):
+
+        rv = io.StringIO()
+
+        author = comment["author"] or "Anonymous"
+        if comment["email"]:
+            author += "(%s)" % comment["email"]
+
+        rv.write(author + " wrote:\n")
+        rv.write(comment["text"] + "\n")
+
+        if comment["website"]:
+            rv.write("User's URL: %s\n" % comment["website"])
+
+        rv.write("IP address: %s\n" % comment["remote_addr"])
+
+        rv.write("Link to comment: %s\n" %
+                 (local("origin") + thread["uri"] + "#isso-%i" % comment["id"]))
+        rv.write("---\n")
+
+        uri = self.public_endpoint + "/id/%i" % comment["id"]
+        key = self.isso.sign(comment["id"])
+
+        rv.write("Delete comment: %s\n" % create_comment_action_url(uri, "delete", key))
+
+        if comment["mode"] == 2:
+            rv.write("Activate comment: %s\n" % create_comment_action_url(uri, "activate", key))
+
+        rv.seek(0)
+        return rv.read()
+
+    def notify_new(self, thread, comment):
+            body = self.format(thread, comment)
+            title = "New comment posted"
+            if thread['title']:
+                title = "%s on %s" % (title, thread["title"])
+            self.notify(title, body)
+
+    def notify(self, title, body):
+        if not title:
+            title = 'isso notification'
+
+        if uwsgi:
+            uwsgi.spool({b"title": title.encode("utf-8"),
+                         b"body": body.encode("utf-8")})
+        else:
+            start_new_thread(self._retry, (title, body))
+
+    def _notify(self, title, body):
+        self.apobj.notify(
+            body,
+            title,
+            
+        )
+
+    def _retry(self, title, body):
+        for x in range(5):
+            try:
+                self.apobj.notify(
+                    body,
+                    title,
+                )
+            except:
+                time.sleep(60)
+            else:
+                break
